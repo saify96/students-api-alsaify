@@ -1,0 +1,18 @@
+version: '2.4'
+
+services:
+  students-api-base:
+    image: students-api-image
+    build:
+      context: .
+    container_name: students-api-base
+    volumes:
+      - ${PWD}:/app
+    environment:
+      - VIRTUAL_HOST=students-api.docker
+    command: ["echo", "base build done"]
+
+  students-api:
+    extends: students-api-base
+    container_name: students-api
+    command: ["uvicorn", "--reload", "--workers", "1", "--host", "0.0.0.0", "--port", "80", "students-api.main:app"]

@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 from typing import Optional
 
@@ -60,3 +61,11 @@ class StudentResponse(BaseModel):
     last_name: Optional[str] = Field(example='last name')
     major: Optional[str] = Field(example='the major')
     gender: Optional[str] = Field(example=enum_to_string(Gender))
+
+
+class TestDB(BaseModel):
+    id: int = Field(example=1234)
+    name: str
+    birth_date: datetime
+    created_at: datetime
+    updated_at: datetime

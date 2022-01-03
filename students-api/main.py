@@ -1,8 +1,11 @@
 from typing import Optional
+from uuid import UUID
 
+from db import engine
+from db import students as students_table
 from fastapi import FastAPI, HTTPException, status
-
-from models import PatchStudent, PostStudent, PutStudent, StudentResponse
+from models import (PatchStudent, PostStudent, PutStudent, StudentResponse,
+                    TestDB)
 from session import JSONResponse
 
 app = FastAPI()
@@ -23,6 +26,23 @@ students = [
         gender='female',
     )
 ]
+
+
+@app.get('/students/{student_id}')
+def get_students_by_id(student_id: UUID) -> JSONResponse:
+    with engine.connect() as conn:
+        student = conn.execute(students_table.select().where(
+            students_table.c.id == student_id)).first()
+
+    if not student:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'Student with id: {student_id} dose not exist'
+        )
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={'data': TestDB(**student._asdict())}
+    )
 
 
 @app.get('/students', response_model=StudentResponse)
@@ -47,21 +67,6 @@ def get_students(major: Optional[str] = None,
         content={
             'data': students if not filtered_students else filtered_students
         }
-    )
-
-
-@app.get('/students/{student_id}')
-def get_students_by_id(student_id: int) -> JSONResponse:
-    # use lambda
-    for student in students:
-        if student.id == student_id:
-            return JSONResponse(
-                status_code=status.HTTP_200_OK,
-                content={'data': student})
-
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f'Student with id: {student_id} dose not exist'
     )
 
 
